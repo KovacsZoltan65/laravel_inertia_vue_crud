@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Book;
 use Inertia\Inertia;
+use App\Observers\BookObserver;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 
@@ -38,5 +40,7 @@ class AppServiceProvider extends ServiceProvider
         Inertia::share('csrf_token', function(){
             return csrf_token();
         });
+
+        Book::observe(BookObserver::class);
     }
 }

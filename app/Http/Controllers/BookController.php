@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Models\Book;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
@@ -34,18 +35,15 @@ class BookController extends Controller
         
         Book::create($request->all());
         
-        return redirect()
-            ->back()
-            ->with('message', 'Book created');
+        $this->processImage($request);
+        
+        return redirect()->back()->with('message', 'Book created');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Book $book)
-    {
-        //
-    }
+    public function show(Book $book){}
 
     /**
      * Update the specified resource in storage.
@@ -59,8 +57,9 @@ class BookController extends Controller
         
         $book->update($request->all());
         
-        return redirect()
-            ->back()
+        $this->processImage($request);
+        
+        return redirect()->back()
             ->with('message', 'Book updated');
     }
 
@@ -71,8 +70,38 @@ class BookController extends Controller
     {
         $book->delete();
         
-        return redirect()
-            ->back()
+        return redirect()->back()
             ->with('message', 'Book deleted');
+    }
+    
+    public function upload(Request $request)
+    {
+        if( $request->hasFile('imageFilepond') ){
+            return $request->file('imageFilepond')->store('uploads/books', 'public');
+        }
+        
+        return '';
+    }
+    
+    public function uploadRevert(Request $request)
+    {
+        if($image = $request->get('image')){
+            $path = storage_path('app/public/' . $image);
+            if(file_exists($path)){
+                unlink($path);
+            }
+        }
+    }
+
+    protected function processImage(Request $request)
+    {
+        if($image = $request->get('image')){
+            $path = storage_path('app/public/' . $image);
+
+            if(file_exists($path)){
+                copy($path, public_path($image));
+                unlink($path);
+            }
+        }
     }
 }
